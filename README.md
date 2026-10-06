@@ -32,7 +32,8 @@ See **[docs/INSTALL.md](docs/INSTALL.md)** for full steps. Summary:
 cd ~/Projects/PROJ-press-chrome
 pipx install -e .
 chtabs init
-chtabs serve   # leave running
+# prefer launchd (see docs/INSTALL.md) — or:
+chtabs serve
 ```
 
 Chrome (**Default** profile, `kirchner.kevin@gmail.com`):

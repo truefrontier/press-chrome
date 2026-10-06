@@ -78,3 +78,26 @@ chtabs history --limit 5 --format json
 - **No** `chrome.debugger` / CDP / OpenClaw relay.
 - Port **18793** avoids OpenClaw’s 18792.
 - Pause agent access from Options if needed.
+
+## Auto-start (launchd)
+
+Preferred over tmux/pm2 on macOS. Runs at login and restarts if it dies.
+
+```bash
+# plist lives in the repo and is installed to LaunchAgents:
+cp ~/Projects/PROJ-press-chrome/launchd/com.truefrontier.chtabs.plist \
+  ~/Library/LaunchAgents/com.truefrontier.chtabs.plist
+
+launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.truefrontier.chtabs.plist
+# or after edits:
+launchctl kickstart -k "gui/$(id -u)/com.truefrontier.chtabs"
+```
+
+Logs: `~/.press-chrome/logs/serve.{out,err}.log`
+
+Stop / disable:
+```bash
+launchctl bootout "gui/$(id -u)/com.truefrontier.chtabs"
+```
+
+Do **not** also run `chtabs serve` in tmux while the LaunchAgent is loaded (port conflict).
