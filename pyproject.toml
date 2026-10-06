@@ -1,0 +1,40 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "press-chrome"
+version = "1.0.0"
+description = "Agent-native read-only Chrome tabs CLI (chtabs) + MV3 extension bridge"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [{ name = "True Frontier" }]
+dependencies = [
+    "click>=8.1.0",
+    "rich>=13.0.0",
+    "aiohttp>=3.9.0",
+]
+
+[project.scripts]
+chtabs = "press_chrome.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/truefrontier/press-chrome"
+Repository = "https://github.com/truefrontier/press-chrome"
+
+[tool.hatch.build.targets.wheel]
+packages = ["press_chrome"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "press_chrome",
+    "extension",
+    "docs",
+    "README.md",
+    "LICENSE",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"

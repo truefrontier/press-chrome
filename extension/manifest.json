@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "Press Chrome",
+  "version": "1.0.0",
+  "description": "Share Chrome tabs with local agents (read-only). chtabs CLI via localhost WebSocket — no debugger.",
+  "action": {
+    "default_title": "Press Chrome: Share / Unshare this tab",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": true
+  },
+  "permissions": [
+    "tabs",
+    "storage",
+    "scripting",
+    "alarms",
+    "history"
+  ],
+  "host_permissions": [
+    "http://127.0.0.1:18793/*",
+    "http://localhost:18793/*",
+    "http://*/*",
+    "https://*/*"
+  ]
+}

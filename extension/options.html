@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Press Chrome Options</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, sans-serif; color: #1a1a1a; }
+    body { max-width: 40rem; margin: 2rem auto; padding: 0 1rem; line-height: 1.45; }
+    h1 { font-size: 1.4rem; }
+    label { display: block; font-weight: 600; margin-top: 1rem; }
+    input[type=text], select { width: 100%; padding: 0.5rem; margin-top: 0.25rem; box-sizing: border-box; }
+    .row { display: flex; gap: 0.75rem; align-items: center; margin-top: 1rem; }
+    button { padding: 0.5rem 1rem; cursor: pointer; }
+    .hint { color: #555; font-size: 0.9rem; }
+    .ok { color: #1b7a3d; }
+    .err { color: #a32020; }
+    code { background: #f3f3f3; padding: 0.1rem 0.3rem; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <h1>Press Chrome</h1>
+  <p class="hint">Read-only agent bridge. No chrome.debugger. Token from <code>chtabs init</code>.</p>
+
+  <label for="token">Bearer token</label>
+  <input id="token" type="text" autocomplete="off" spellcheck="false" placeholder="paste token from ~/.press-chrome/token" />
+
+  <label for="wsUrl">Daemon WebSocket URL</label>
+  <input id="wsUrl" type="text" value="ws://127.0.0.1:18793/ws" />
+
+  <label for="trust">Trust mode</label>
+  <select id="trust">
+    <option value="shared_plus_active">shared_plus_active (default) — shared tabs + active tab</option>
+    <option value="shared_only">shared_only — only Share’d tabs</option>
+    <option value="all_tabs_meta">all_tabs_meta — all tab titles/URLs (bodies still need Share / active policy)</option>
+  </select>
+
+  <div class="row">
+    <label><input type="checkbox" id="paused" /> Pause agent access (disconnects RPC)</label>
+  </div>
+
+  <div class="row">
+    <button id="save" type="button">Save</button>
+    <span id="status"></span>
+  </div>
+
+  <h2>How to use</h2>
+  <ol>
+    <li>Run <code>chtabs init</code> then <code>chtabs serve</code> in a terminal.</li>
+    <li>Paste the token here and Save.</li>
+    <li>Click the toolbar icon on a tab to <strong>Share</strong> it (badge = shared count).</li>
+    <li>Agents: <code>chtabs list</code>, <code>chtabs active</code>, <code>chtabs read &lt;id&gt;</code>, <code>chtabs history</code>.</li>
+  </ol>
+  <p class="hint">Chrome profile: load this unpacked extension in your <strong>Default</strong> daily profile (kirchner.kevin@gmail.com).</p>
+  <script src="options.js"></script>
+</body>
+</html>
