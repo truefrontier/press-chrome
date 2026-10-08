@@ -14,7 +14,7 @@ Do **not** install into Kate (`Profile 4`) or nextnow (`Profile 7`) unless inten
 ### 1. Install CLI
 
 ```bash
-cd ~/Projects/PROJ-press-chrome
+cd ~/Sites/truefrontier/press-chrome
 pipx install -e .
 # ensures ~/.local/bin/chtabs  (PATH should already include this)
 ```
@@ -43,7 +43,7 @@ chtabs serve
 4. **Load unpacked** → select exactly:
 
 ```
-/Users/kk/Projects/PROJ-press-chrome/extension
+/Users/kk/Sites/truefrontier/press-chrome/extension
 ```
 
 5. Pin **Press Chrome**.
@@ -85,7 +85,7 @@ Preferred over tmux/pm2 on macOS. Runs at login and restarts if it dies.
 
 ```bash
 # plist lives in the repo and is installed to LaunchAgents:
-cp ~/Projects/PROJ-press-chrome/launchd/com.truefrontier.chtabs.plist \
+cp ~/Sites/truefrontier/press-chrome/launchd/com.truefrontier.chtabs.plist \
   ~/Library/LaunchAgents/com.truefrontier.chtabs.plist
 
 launchctl bootstrap "gui/$(id -u)" ~/Library/LaunchAgents/com.truefrontier.chtabs.plist

@@ -29,7 +29,7 @@ Options also support `shared_only` and `all_tabs_meta` (titles/URLs only for all
 See **[docs/INSTALL.md](docs/INSTALL.md)** for full steps. Summary:
 
 ```bash
-cd ~/Projects/PROJ-press-chrome
+cd ~/Sites/truefrontier/press-chrome
 pipx install -e .
 chtabs init
 # prefer launchd (see docs/INSTALL.md) — or:
@@ -39,7 +39,7 @@ chtabs serve
 Chrome (**Default** profile, `kirchner.kevin@gmail.com`):
 
 1. `chrome://extensions` → Developer mode → **Load unpacked**
-2. Select `/Users/kk/Projects/PROJ-press-chrome/extension`
+2. Select `/Users/kk/Sites/truefrontier/press-chrome/extension`
 3. Options → paste token from `chtabs init` → Save
 4. Click toolbar icon to Share a tab
 
