@@ -97,3 +97,52 @@ python -m pytest tests/ -q
 ## License
 
 MIT
+
+## Vision (1.1)
+
+```bash
+chtabs vision ask 123 "Is a sign-in form visible?" --format json
+chtabs vision box 123 "the search field" --save-screenshot /tmp/tab.png --format json
+chtabs vision ask --image /tmp/tab.png "Is a sign-in form visible?"
+chtabs vision box --image /tmp/tab.png "the search field" --threshold 0.7
+chtabs agent-help --format json
+```
+
+Vision is read-only. A tab must already be active in its own window and allowed
+by the sharing policy. The CLI never focuses a window, activates a tab, clicks,
+types, or navigates. Bring an inactive tab forward yourself or use `--image`.
+Screenshots are sent to TypeSafe for analysis; `--save-screenshot` saves the
+original PNG/JPEG bytes before image preparation.
+
+`ask` sends one Noul question. `box` sends presence (Noul) and location (Box) in
+one request. `noul >= --threshold` means `yes` (default 0.5); absent targets
+produce `box: null`. Box output includes `confidence`, raw API `fractions`,
+original `screenshot` pixel coordinates, `viewport` CSS coordinates, and document
+`page` CSS coordinates. CSS coordinates divide screenshot pixels by the captured
+device pixel ratio, then add scroll offsets for `page`. File inputs have null
+viewport/page coordinates. Rectangles include x/y/width/height and all four edges.
+Floating-point coordinates preserve precision. Padding is excluded and boxes are
+clipped to the original image bounds.
+
+PNG/JPEG inputs are downscaled to a maximum side of 1568 and centered on white
+padding wherever a side is below 280. Separate effective x/y scales account for
+integer resize rounding. The API receives multipart image bytes, model
+`jev-1.14.0`, and the required image opt-in header. See the TypeSafe
+[image contract](https://docs.typesafe.ai/images) and
+[Box contract](https://docs.typesafe.ai/primitives/box).
+
+The default output is human text. `--format json` emits one object; the existing
+`--format table` convention auto-selects JSON when piped. `--select`, `--csv`,
+`--quiet`, and `--compact` are accepted (vision already returns a single compact
+result object).
+
+Requests run through `~/.local/bin/av`; override with `CHTABS_AV`. If Agent Vault
+has already supplied `HTTPS_PROXY` and `TYPESAFE_API_KEY`, requests run in-process
+using the proxy environment and `SSL_CERT_FILE` (or `REQUESTS_CA_BUNDLE`). Keys
+are read only inside that process, never passed on command arguments. API HTTP
+errors include status and response body. Local image use needs no daemon/Chrome.
+
+After updating, reinstall Python dependencies (`pipx install -e . --force`) and
+**reload the unpacked extension** at `chrome://extensions` using its Reload button.
+Restart the daemon/launchd service to pick up Python changes. The extension and
+Python package should both report 1.1.0.

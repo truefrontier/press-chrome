@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Press Chrome",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Share Chrome tabs with local agents (read-only). chtabs CLI via localhost WebSocket — no debugger.",
   "action": {
     "default_title": "Press Chrome: Share / Unshare this tab",

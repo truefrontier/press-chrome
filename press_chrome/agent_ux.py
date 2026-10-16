@@ -135,3 +135,17 @@ def agent_output_options(
 
     return decorator
 
+
+
+def agent_help_entries() -> list[dict]:
+    return [
+        {"command": "chtabs list", "description": "List shared/active tab metadata"},
+        {"command": "chtabs show TAB_ID", "description": "Show allowed tab metadata"},
+        {"command": "chtabs read TAB_ID", "description": "Read allowed tab text"},
+        {"command": "chtabs active", "description": "Read active tab text"},
+        {"command": "chtabs history", "description": "Search browser history"},
+        {"command": "chtabs vision ask [TAB_ID | --image PATH] QUESTION",
+         "description": "One read-only Noul judgment; --threshold 0.5; --format json"},
+        {"command": "chtabs vision box [TAB_ID | --image PATH] TARGET",
+         "description": "Presence + Box in one request; original image/CSS coordinates; never activates tabs"},
+    ]

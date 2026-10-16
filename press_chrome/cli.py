@@ -278,5 +278,70 @@ def history(
     sys.exit(EXIT_OK)
 
 
+@main.group()
+def vision() -> None:
+    """Read-only image questions and bounding boxes using TypeSafe."""
+
+
+def _vision_command(kind):
+    @click.argument("source_or_question")
+    @click.argument("question", required=False)
+    @click.option("--image", "image_path", type=click.Path(exists=True, dir_okay=False))
+    @click.option("--threshold", default=0.5, type=click.FloatRange(0, 1), show_default=True)
+    @click.option("--save-screenshot", type=click.Path(dir_okay=False))
+    @agent_output_options(default_format="text", formats=("text", "json", "table"))
+    def command(source_or_question, question, image_path, threshold, save_screenshot,
+                fmt, compact, select, quiet, as_csv):
+        from .vision import analyze, VisionError
+        import math
+        if not math.isfinite(threshold):
+            raise click.UsageError("Threshold must be finite and between 0 and 1")
+        tab_id = None
+        if image_path:
+            if question is not None:
+                raise click.UsageError("Use --image PATH QUESTION without a tab ID")
+            question = source_or_question
+        else:
+            try:
+                tab_id = int(source_or_question)
+            except ValueError:
+                raise click.UsageError("Provide a numeric tab ID or use --image PATH") from None
+            if not question:
+                raise click.UsageError("A question/target is required")
+        if not question.strip():
+            raise click.UsageError("A nonempty question/target is required")
+        try:
+            data = analyze(kind, question, tab_id=tab_id, image_path=image_path,
+                           threshold=threshold, save_screenshot=save_screenshot)
+        except client.ClientError as exc:
+            _handle_client_error(exc)
+        except (VisionError, OSError) as exc:
+            die(str(exc))
+        data = select_fields(data, select)
+        if as_csv:
+            emit_csv([data])
+        elif resolve_format(fmt) == "json":
+            emit_json(data)
+        else:
+            import json
+            for key, value in data.items():
+                click.echo(f"{key}: {json.dumps(value) if isinstance(value, (dict, list)) or value is None else value}")
+    command.__doc__ = "Ask one yes/no image question." if kind == "ask" else "Find one target in an image."
+    return command
+
+
+vision.command("ask")(_vision_command("ask"))
+vision.command("box")(_vision_command("box"))
+
+
+@main.command("agent-help")
+@agent_output_options(default_format="text", formats=("text", "json", "table"))
+def agent_help(fmt, compact, select, quiet, as_csv):
+    """Command reference for agents."""
+    from .agent_ux import agent_help_entries
+    _emit_rows(agent_help_entries(), fmt=fmt, compact=compact, select=select,
+               quiet=quiet, as_csv=as_csv, compact_fields=["command", "description"], noun="commands")
+
+
 if __name__ == "__main__":
     main()

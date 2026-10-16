@@ -101,3 +101,11 @@ launchctl bootout "gui/$(id -u)/com.truefrontier.chtabs"
 ```
 
 Do **not** also run `chtabs serve` in tmux while the LaunchAgent is loaded (port conflict).
+
+## Updating to 1.1.0 (vision)
+
+Reinstall the Python package to include Pillow, reload Press Chrome's unpacked
+extension in `chrome://extensions`, and restart `chtabs serve` or its launchd
+service. No new activation/input permissions or actions are introduced.
+Configure Agent Vault at `~/.local/bin/av` (override using `CHTABS_AV`) with
+TypeSafe access. See [Vision usage and output](../README.md#vision-11).

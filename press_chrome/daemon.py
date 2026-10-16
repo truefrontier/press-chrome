@@ -126,7 +126,7 @@ async def handle_rpc(request: web.Request) -> web.Response:
 
 async def handle_ws(request: web.Request) -> web.WebSocketResponse:
     state: BridgeState = request.app["state"]
-    ws = web.WebSocketResponse(heartbeat=20)
+    ws = web.WebSocketResponse(heartbeat=20, max_msg_size=32 * 1024 * 1024)
     await ws.prepare(request)
     authenticated = False
 

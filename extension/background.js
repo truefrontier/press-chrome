@@ -7,7 +7,7 @@
 const DEFAULT_WS = "ws://127.0.0.1:18793/ws";
 const DEFAULT_TRUST = "shared_plus_active";
 const ALARM_RECONNECT = "press-chrome-reconnect";
-const VERSION = "1.0.0";
+const VERSION = "1.1.0";
 
 let ws = null;
 let reconnectTimer = null;
@@ -219,6 +219,9 @@ async function handleMessage(msg) {
     case "show":
       safeSend(await showTab(id, msg.tabId));
       break;
+    case "screenshot":
+      safeSend(await screenshotTab(id, msg.tabId));
+      break;
     case "read":
       safeSend(await readTab(id, msg.tabId));
       break;
@@ -380,6 +383,37 @@ async function readTab(reqId, tabId) {
     error: extracted.error,
     code: extracted.ok ? undefined : 5,
   };
+}
+
+// Only capture a tab already active in its window. Never activate or focus.
+async function screenshotTab(reqId, tabId) {
+  const hidden = "tab not visible; bring it to front yourself or use --image";
+  let tab;
+  try { tab = await chrome.tabs.get(Number(tabId)); }
+  catch { return { id: reqId, ok: false, error: "not_found", code: 3 }; }
+  if (!tab.active) return { id: reqId, ok: false, error: hidden, code: 5 };
+  if (!(await isAllowed(tab))) return { id: reqId, ok: false, error: "not_shared", code: 3 };
+  const metadata = async () => {
+    const [{ result }] = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => ({ devicePixelRatio, innerWidth, innerHeight, scrollX, scrollY, href: location.href }),
+    });
+    return result;
+  };
+  const visible = async () => {
+    const tabs = await chrome.tabs.query({ active: true, windowId: tab.windowId });
+    return tabs[0]?.id === tab.id;
+  };
+  const before = await metadata();
+  if (!(await visible())) return { id: reqId, ok: false, error: hidden, code: 5 };
+  const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+  if (!(await visible())) return { id: reqId, ok: false, error: hidden, code: 5 };
+  const after = await metadata();
+  if (!(await visible())) return { id: reqId, ok: false, error: hidden, code: 5 };
+  if (JSON.stringify(before) !== JSON.stringify(after)) {
+    return { id: reqId, ok: false, error: "page changed during screenshot; retry", code: 5 };
+  }
+  return { id: reqId, ok: true, tabId: tab.id, dataUrl, ...before };
 }
 
 async function readActive(reqId) {

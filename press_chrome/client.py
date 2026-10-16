@@ -73,3 +73,12 @@ def health() -> dict[str, Any]:
             return json.loads(resp.read().decode("utf-8"))
     except Exception as exc:  # noqa: BLE001
         raise ClientError(f"daemon_unreachable: {exc}", code=4) from exc
+
+
+def screenshot(tab_id: int) -> dict[str, Any]:
+    """Capture only an already visible tab; never activate it."""
+    result = rpc({"type": "screenshot", "tabId": tab_id})
+    if not result.get("ok"):
+        raise ClientError(result.get("error") or "screenshot_failed",
+                          code=int(result.get("code") or 5), payload=result)
+    return result

@@ -117,3 +117,27 @@ async def test_ws_hello_and_list(client_and_token):
     assert data["tabs"][0]["title"] == "Example"
     task.cancel()
     await ws.close()
+
+
+@pytest.mark.asyncio
+async def test_screenshot_rpc_forwarded(client_and_token):
+    client, token = client_and_token
+    ws = await client.ws_connect('/ws')
+    await ws.send_json({'type': 'hello', 'token': token, 'version': '1.1.0'})
+    await ws.receive_json()
+
+    async def extension_capture():
+        request = await ws.receive_json()
+        assert request['type'] == 'screenshot' and request['tabId'] == 17
+        # Screenshots can exceed aiohttp's default 4 MiB WS message limit.
+        await ws.send_json({'id': request['id'], 'ok': True, 'dataUrl': 'x' * (5*1024*1024),
+                            'devicePixelRatio': 2, 'scrollX': 0, 'scrollY': 100})
+
+    task = asyncio.create_task(extension_capture())
+    result = await client.post('/rpc', json={'type': 'screenshot', 'tabId': 17},
+                               headers={'Authorization': f'Bearer {token}'})
+    data = await result.json()
+    assert data['ok'] and len(data['dataUrl']) == 5*1024*1024
+    assert data['devicePixelRatio'] == 2
+    await task
+    await ws.close()
