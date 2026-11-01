@@ -13,7 +13,7 @@ from typing import Any
 from aiohttp import WSMsgType, web
 
 from . import __version__
-from .config import DEFAULT_HOST, DEFAULT_PORT, read_config, read_token
+from .config import DEFAULT_HOST, DEFAULT_PORT, ConfigError, default_config, read_config, read_token
 
 log = logging.getLogger("press_chrome.daemon")
 
@@ -28,6 +28,18 @@ class BridgeState:
         self.pending: dict[str, asyncio.Future] = {}
         self.started_at = time.time()
         self.paused = False
+        self.config = default_config()
+
+    def live_config(self) -> dict[str, Any]:
+        """Re-read config.json. If it has gone bad, log it and keep the last good values.
+
+        A bad file must not take down a running bridge; it only stops the next start.
+        """
+        try:
+            self.config = read_config()
+        except ConfigError as exc:
+            log.warning("Keeping last good config: %s", exc)
+        return self.config
 
     def extension_connected(self) -> bool:
         return self.extension_ws is not None and not self.extension_ws.closed
@@ -77,7 +89,7 @@ async def handle_status(request: web.Request) -> web.Response:
     err = _check_auth(request, state)
     if err:
         return err
-    cfg = read_config()
+    cfg = state.live_config()
     body = {
         "ok": True,
         "version": __version__,
@@ -165,7 +177,7 @@ async def handle_ws(request: web.Request) -> web.WebSocketResponse:
                         "ok": True,
                         "type": "hello_ack",
                         "version": __version__,
-                        "trust": read_config().get("trust", "shared_plus_active"),
+                        "trust": state.live_config().get("trust", "shared_plus_active"),
                     }
                 )
                 continue
@@ -219,6 +231,7 @@ async def run_daemon(
     host = host or str(cfg.get("host", DEFAULT_HOST))
     port = int(port or cfg.get("port", DEFAULT_PORT))
     app = create_app(token=token)
+    app["state"].config = cfg
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(runner, host, port)

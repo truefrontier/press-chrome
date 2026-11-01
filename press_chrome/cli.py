@@ -26,7 +26,7 @@ from .agent_ux import (
     select_fields,
 )
 from . import client
-from .config import DEFAULT_PORT, init_config, read_config, read_token, ws_url
+from .config import DEFAULT_PORT, ConfigError, init_config, read_config, read_token, ws_url
 from .daemon import main_serve
 
 console = Console(stderr=True)
@@ -74,14 +74,24 @@ def _handle_client_error(exc: client.ClientError) -> None:
     die(str(exc), code=exc.code)
 
 
-@click.group()
+class _MainGroup(click.Group):
+    """The one catch for every command: a bad config.json exits cleanly, with no traceback."""
+
+    def invoke(self, ctx: click.Context) -> Any:
+        try:
+            return super().invoke(ctx)
+        except ConfigError as exc:
+            die(str(exc), code=EXIT_USAGE)
+
+
+@click.group(cls=_MainGroup)
 @click.version_option(__version__, prog_name="chtabs")
 def main() -> None:
     """Press Chrome — read-only Chrome tabs for agents (chtabs)."""
 
 
 @main.command()
-@click.option("--force", is_flag=True, help="Rotate token even if one exists.")
+@click.option("--force", is_flag=True, help="Rotate the token and reset config.json to defaults, even if it is bad.")
 def init(force: bool) -> None:
     """Create ~/.press-chrome/{token,config.json} (mode 0600)."""
     token, cfg = init_config(force=force)

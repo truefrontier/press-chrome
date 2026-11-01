@@ -102,6 +102,23 @@ launchctl bootout "gui/$(id -u)/com.truefrontier.chtabs"
 
 Do **not** also run `chtabs serve` in tmux while the LaunchAgent is loaded (port conflict).
 
+## Bad config file
+
+If `~/.press-chrome/config.json` is corrupt, isn't a JSON object, or has an invalid
+port, commands that use it exit with code 2 and an error that names the file.
+
+- **A running daemon keeps working.** It logs a warning and uses the last good values.
+- **A daemon can't start until the file is repaired.** Under launchd it retries every
+  few seconds. Find the error in `~/.press-chrome/logs/serve.err.log`.
+
+To repair the file, do one of these:
+
+- Fix the file by hand. The token doesn't change.
+- Run `chtabs init --force`. This resets the config to defaults and rotates the token.
+  Then restart the daemon and paste the new token into the extension Options page.
+  If you used a custom host or port, set it again in `config.json` and in the Daemon
+  WebSocket URL field on the Options page.
+
 ## Updating to 1.1.0 (vision)
 
 Reinstall the Python package to include Pillow, reload Press Chrome's unpacked
